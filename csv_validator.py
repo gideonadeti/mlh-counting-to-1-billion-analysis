@@ -188,7 +188,7 @@ def process_csv_file(file):
         file: The uploaded file object from Streamlit
 
     Returns:
-        pd.DataFrame: The validated dataframe, or None if validation fails
+        tuple: (dataframe, column_mapping) if validation succeeds, None if validation fails
     """
     try:
         # Read the CSV file
@@ -237,8 +237,8 @@ def process_csv_file(file):
                 st.error(f"{error}")
             st.stop()
 
-        # Return the validated dataframe for display in the main app
-        return df
+        # Return the validated dataframe and column mapping for use in the main app
+        return df, column_mapping
 
     except pd.errors.EmptyDataError:
         st.error("The CSV file is empty")
