@@ -106,6 +106,65 @@ def validate_date_ordering(df: pd.DataFrame, column_mapping: dict[str, str]):
     return validation_errors
 
 
+def validate_numeric_rules(df: pd.DataFrame, column_mapping: dict[str, str]):
+    """
+    Validate business logic rules for numeric columns:
+    1. to >= from (ending number should be >= starting number)
+    2. count = to - from + 1 (count should match calculated value)
+
+    Returns:
+        list: List of validation error messages (empty if all rules pass)
+    """
+    validation_errors = []
+
+    # Get column names
+    from_col = column_mapping["from"]
+    to_col = column_mapping["to"]
+    count_col = column_mapping["count"]
+
+    # Convert to numeric (should already be validated, but ensure numeric types)
+    from_values = pd.to_numeric(df[from_col], errors="coerce")
+    to_values = pd.to_numeric(df[to_col], errors="coerce")
+    count_values = pd.to_numeric(df[count_col], errors="coerce")
+
+    # Check for any NaN values (shouldn't happen if data types validated, but check anyway)
+    if from_values.isna().any() or to_values.isna().any() or count_values.isna().any():
+        validation_errors.append(
+            "Found invalid numeric values (NaN) in from, to, or count columns"
+        )
+
+        return validation_errors
+
+    # Rule 1: to >= from
+    invalid_ranges = df[to_values < from_values]
+
+    if not invalid_ranges.empty:
+        date_col = column_mapping["date"]
+        invalid_dates = (
+            pd.to_datetime(invalid_ranges[date_col]).dt.strftime("%Y-%m-%d").tolist()
+        )
+
+        validation_errors.append(
+            f"Found rows where 'to' < 'from': {', '.join(invalid_dates)}"
+        )
+
+    # Rule 2: count = to - from + 1
+    calculated_count = to_values - from_values + 1
+    mismatched = df[count_values != calculated_count]
+
+    if not mismatched.empty:
+        date_col = column_mapping["date"]
+        mismatched_dates = (
+            pd.to_datetime(mismatched[date_col]).dt.strftime("%Y-%m-%d").tolist()
+        )
+
+        validation_errors.append(
+            f"Found rows where 'count' ≠ 'to - from + 1': {', '.join(mismatched_dates)}"
+        )
+
+    return validation_errors
+
+
 def display_data(df: pd.DataFrame):
     """Display the CSV headers and a preview of the data."""
 
@@ -171,6 +230,14 @@ def process_csv_file(file):
 
         if ordering_errors:
             for error in ordering_errors:
+                st.error(f"{error}")
+            st.stop()
+
+        # Validate numeric business logic rules
+        numeric_rules_errors = validate_numeric_rules(df, column_mapping)
+
+        if numeric_rules_errors:
+            for error in numeric_rules_errors:
                 st.error(f"{error}")
             st.stop()
 
