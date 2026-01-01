@@ -36,12 +36,25 @@ def calculate_metrics(df: pd.DataFrame, column_mapping: dict[str, str]):
     peak_performance_idx = count_values.idxmax()
     peak_performance_date = pd.to_datetime(df.loc[peak_performance_idx, date_col])
 
+    # Calculate estimated completion time in years
+    # Calculate remaining numbers to count
+    remaining = 1_000_000_000 - current_standing
+
+    # Calculate years remaining (based on average daily throughput)
+    if daily_throughput > 0:
+        days_remaining = remaining / daily_throughput
+        years_remaining = days_remaining / 365.25  # Account for leap years
+        estimated_completion_years = years_remaining
+    else:
+        estimated_completion_years = None  # Can't estimate if no throughput
+
     return {
         "current_standing": current_standing,
         "completion_percentage": completion_percentage,
         "daily_throughput": daily_throughput,
         "peak_performance": peak_performance,
         "peak_performance_date": peak_performance_date,
+        "estimated_completion_years": estimated_completion_years,
     }
 
 
@@ -86,3 +99,33 @@ def display_metrics(metrics: dict[str, float]):
             value=f"{metrics['peak_performance']:,.0f}",
             help="Maximum numbers counted in a single day",
         )
+
+    # Estimated Completion Time
+    st.divider()
+
+    if metrics.get("estimated_completion_years") is not None:
+        years = metrics["estimated_completion_years"]
+
+        if years >= 1000:
+            # For very large values, show in thousands of years
+            years_str = f"~{years / 1000:.1f} thousand years"
+        elif years >= 100:
+            # For large values, show with one decimal
+            years_str = f"~{years:.1f} years"
+        else:
+            # For smaller values, show with one decimal
+            years_str = f"~{years:.1f} years"
+
+        st.metric(
+            label="Estimated Completion Time",
+            value=years_str,
+            help="Projected time to reach 1 billion based on average daily throughput",
+        )
+    else:
+        st.metric(
+            label="Estimated Completion Time",
+            value="N/A",
+            help="Cannot estimate: no daily throughput data",
+        )
+
+    st.divider()
