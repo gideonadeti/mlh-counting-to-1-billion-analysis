@@ -110,6 +110,21 @@ def display_data(df: pd.DataFrame):
     st.dataframe(df.head())
 
 
+@st.cache_data
+def read_csv_file(file):
+    """
+    Read and cache the CSV file to avoid re-reading on reruns.
+
+    Args:
+        file: The uploaded file object from Streamlit
+
+    Returns:
+        pd.DataFrame: The loaded dataframe
+    """
+
+    return pd.read_csv(file)
+
+
 def process_csv_file(file):
     """
     Process and validate the uploaded CSV file.
@@ -119,7 +134,7 @@ def process_csv_file(file):
     """
     try:
         # Read the CSV file
-        df = pd.read_csv(file)
+        df = read_csv_file(file)
 
         # Expected required columns
         required_columns = ["date", "count"]
