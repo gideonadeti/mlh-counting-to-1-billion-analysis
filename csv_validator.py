@@ -56,7 +56,7 @@ def validate_data_types(df: pd.DataFrame, column_mapping: dict[str, str]):
     return validation_errors
 
 
-def display_data(df: pd.DataFrame) -> None:
+def display_data(df: pd.DataFrame):
     """Display the CSV headers and a preview of the data."""
 
     st.subheader("Data Preview")
@@ -92,9 +92,6 @@ def process_csv_file(file):
             for error in validation_errors:
                 st.error(f"{error}")
             st.stop()
-
-        # All validations passed
-        st.success("CSV file is valid!")
 
         # Display the data
         display_data(df)
