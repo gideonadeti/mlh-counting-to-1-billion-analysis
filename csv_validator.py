@@ -165,13 +165,6 @@ def validate_numeric_rules(df: pd.DataFrame, column_mapping: dict[str, str]):
     return validation_errors
 
 
-def display_data(df: pd.DataFrame):
-    """Display the CSV headers and a preview of the data."""
-
-    st.subheader("Data Preview")
-    st.dataframe(df.head())
-
-
 @st.cache_data
 def read_csv_file(file):
     """
@@ -193,6 +186,9 @@ def process_csv_file(file):
 
     Args:
         file: The uploaded file object from Streamlit
+
+    Returns:
+        pd.DataFrame: The validated dataframe, or None if validation fails
     """
     try:
         # Read the CSV file
@@ -241,12 +237,15 @@ def process_csv_file(file):
                 st.error(f"{error}")
             st.stop()
 
-        # Display the data
-        display_data(df)
+        # Return the validated dataframe for display in the main app
+        return df
 
     except pd.errors.EmptyDataError:
         st.error("The CSV file is empty")
+        return None
     except pd.errors.ParserError as e:
         st.error(f"Error parsing CSV file: {str(e)}")
+        return None
     except (OSError, ValueError, TypeError) as e:
         st.error(f"Unexpected error: {str(e)}")
+        return None
