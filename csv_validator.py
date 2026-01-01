@@ -56,6 +56,53 @@ def validate_data_types(df: pd.DataFrame, column_mapping: dict[str, str]):
     return validation_errors
 
 
+def validate_date_duplicates(df: pd.DataFrame, column_mapping: dict[str, str]):
+    """
+    Validate that there are no duplicate dates in the dataframe.
+
+    Returns:
+        list: List of validation error messages (empty if no duplicates found)
+    """
+    validation_errors = []
+    date_col = column_mapping["date"]
+
+    # Convert to datetime for comparison
+    df_dates = pd.to_datetime(df[date_col])
+
+    # Check for duplicate dates
+    duplicates = df_dates[df_dates.duplicated()]
+
+    if not duplicates.empty:
+        duplicate_dates = pd.Series(duplicates.unique())
+        duplicate_dates_str = duplicate_dates.dt.strftime("%Y-%m-%d").tolist()
+
+        validation_errors.append(
+            f"Found duplicate dates: {', '.join(duplicate_dates_str)}"
+        )
+
+    return validation_errors
+
+
+def validate_date_ordering(df: pd.DataFrame, column_mapping: dict[str, str]):
+    """
+    Validate that dates are in chronological order (ascending).
+
+    Returns:
+        list: List of validation error messages (empty if dates are in order)
+    """
+    validation_errors = []
+    date_col = column_mapping["date"]
+
+    # Convert to datetime for comparison
+    df_dates = pd.to_datetime(df[date_col])
+
+    # Check if dates are in chronological order (ascending)
+    if not df_dates.is_monotonic_increasing:
+        validation_errors.append("Dates are not in chronological order (ascending)")
+
+    return validation_errors
+
+
 def display_data(df: pd.DataFrame):
     """Display the CSV headers and a preview of the data."""
 
@@ -90,6 +137,22 @@ def process_csv_file(file):
 
         if validation_errors:
             for error in validation_errors:
+                st.error(f"{error}")
+            st.stop()
+
+        # Validate date duplicates
+        duplicate_errors = validate_date_duplicates(df, column_mapping)
+
+        if duplicate_errors:
+            for error in duplicate_errors:
+                st.error(f"{error}")
+            st.stop()
+
+        # Validate date ordering
+        ordering_errors = validate_date_ordering(df, column_mapping)
+
+        if ordering_errors:
+            for error in ordering_errors:
                 st.error(f"{error}")
             st.stop()
 
