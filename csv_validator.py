@@ -42,16 +42,19 @@ def validate_data_types(df: pd.DataFrame, column_mapping: dict[str, str]):
     except (ValueError, TypeError):
         validation_errors.append(f"Date column '{date_col}' contains invalid dates")
 
-    # Validate count column (numeric)
-    count_col = column_mapping["count"]
+    # Validate numeric columns: from, to, and count
+    numeric_columns = ["from", "to", "count"]
 
-    if not pd.api.types.is_numeric_dtype(df[count_col]):
-        try:
-            pd.to_numeric(df[count_col], errors="raise")
-        except (ValueError, TypeError):
-            validation_errors.append(
-                f"Column '{count_col}' (expected 'count') must contain numeric values"
-            )
+    for expected_name in numeric_columns:
+        actual_col = column_mapping[expected_name]
+
+        if not pd.api.types.is_numeric_dtype(df[actual_col]):
+            try:
+                pd.to_numeric(df[actual_col], errors="raise")
+            except (ValueError, TypeError):
+                validation_errors.append(
+                    f"Column '{actual_col}' (expected '{expected_name}') must contain numeric values"
+                )
 
     return validation_errors
 
@@ -137,7 +140,7 @@ def process_csv_file(file):
         df = read_csv_file(file)
 
         # Expected required columns
-        required_columns = ["date", "count"]
+        required_columns = ["date", "from", "to", "count"]
 
         # Validate columns
         column_mapping, missing_columns = validate_columns(df, required_columns)
