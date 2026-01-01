@@ -2,7 +2,7 @@
 
 A Streamlit web application for analyzing counting progress data from the MLH Discord channel where members are collectively counting up to 1 billion. Upload your CSV data and get comprehensive insights, metrics, and visualizations of your counting progress.
 
-**Live Demo:** [Counting to 1 Billion Analysis](https://counting-to-1-billion-analysis.streamlit.app/)
+**Live Demo:** [MLH Counting to 1 Billion Analysis](https://mlh-counting-to-1-billion-analysis.streamlit.app)
 
 ## Table of Contents
 
