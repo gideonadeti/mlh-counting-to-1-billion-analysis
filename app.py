@@ -1,17 +1,14 @@
 import streamlit as st
-import pandas as pd
 
+from csv_validator import process_csv_file
+
+# Main Streamlit app
 st.title("MLH Counting to 1 Billion Analysis")
 
 # File uploader
 uploaded_file = st.file_uploader("Upload your CSV file", type="csv")
 
 if uploaded_file is not None:
-    # Read the CSV file
-    df = pd.read_csv(uploaded_file)
-
-    # Show a preview of the data
-    st.subheader("Data Preview")
-    st.dataframe(df.head())
+    process_csv_file(uploaded_file)
 else:
     st.info("Please upload a CSV file to get started.")
